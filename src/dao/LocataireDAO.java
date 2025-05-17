@@ -82,4 +82,25 @@ public class LocataireDAO {
         }
         return liste;
     }
+    
+    public Locataire findById(int id) {
+        Locataire locataire = null;
+        String sql = "SELECT * FROM locataire WHERE id = ?";
+        try (Connection conn = Connexion.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                locataire = new Locataire();
+                locataire.setId(rs.getInt("id"));
+                locataire.setNom(rs.getString("nom"));
+                locataire.setPrenom(rs.getString("prenom"));
+                // Autres champs...
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return locataire;
+    }
 }

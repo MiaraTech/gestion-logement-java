@@ -10,6 +10,11 @@ public class ContratLocation {
     private LocalDate dateFin;
     private double loyerMensuel;
     
+    // Ces objets liés
+    private Locataire locataire;
+    private Logement logement;
+    
+    
     public ContratLocation () {};
 
     public ContratLocation(int id, int idLogement, int idLocataire, LocalDate dateDebut, LocalDate dateFin, double loyerMensuel) {
@@ -69,5 +74,20 @@ public class ContratLocation {
         this.loyerMensuel = loyerMensuel;
     }
     
+    public Locataire getLocataire() {
+        return locataire;
+    }
+
+    public void setLocataire(Locataire locataire) {
+        this.locataire = locataire;
+    }
+
+    public Logement getLogement() {
+        return logement;
+    }
+
+    public void setLogement(Logement logement) {
+        this.logement = logement;
+    }
     
 }

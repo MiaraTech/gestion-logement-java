@@ -6,7 +6,7 @@ import java.awt.*;
 public class MenuPrincipal extends JFrame {
     public MenuPrincipal() {
         setTitle("Application de Gestion de Logement");
-        setSize(500, 450);
+        setSize(500, 520);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -15,7 +15,7 @@ public class MenuPrincipal extends JFrame {
         mainPanel.setLayout(new BorderLayout());
 
         // Titre
-        JLabel title = new JLabel("Tableau de Bord", SwingConstants.CENTER);
+        JLabel title = new JLabel("Menu Principal", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 24));
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
         mainPanel.add(title, BorderLayout.NORTH);
@@ -23,10 +23,11 @@ public class MenuPrincipal extends JFrame {
         // Panel boutons
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);
-        buttonPanel.setLayout(new GridLayout(6, 1, 15, 15));
+        buttonPanel.setLayout(new GridLayout(7, 1, 15, 15));  // 7 lignes maintenant
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
         String[] noms = {
+            "Tableau de Bord", // 🔥 Nouveau bouton
             "Gestion des Logements", "Gestion des Locataires", "Gestion des Contrats",
             "Gestion des Paiements", "Gestion des Entretiens", "Quitter"
         };
@@ -49,7 +50,7 @@ public class MenuPrincipal extends JFrame {
         }
 
         // Couleur spécifique pour bouton Quitter
-        boutons[5].setBackground(new Color(220, 53, 69));
+        boutons[noms.length - 1].setBackground(new Color(220, 53, 69));
 
         mainPanel.add(buttonPanel, BorderLayout.CENTER);
         add(mainPanel);
@@ -58,12 +59,13 @@ public class MenuPrincipal extends JFrame {
 
     private void actionBouton(int index) {
         switch (index) {
-            case 0 -> new FormLogement().setVisible(true);
-            case 1 -> new FormLocataire().setVisible(true);
-            case 2 -> new FormContratLocation().setVisible(true);
-            case 3 -> new FormPaiement().setVisible(true);
-            case 4 -> new FormEntretien().setVisible(true);
-            case 5 -> System.exit(0);
+            case 0 -> new DashboardView().setVisible(true);          // 🚀 Dashboard
+            case 1 -> new FormLogement().setVisible(true);
+            case 2 -> new FormLocataire().setVisible(true);
+            case 3 -> new FormContratLocation().setVisible(true);
+            case 4 -> new FormPaiement().setVisible(true);
+            case 5 -> new FormEntretien().setVisible(true);
+            case 6 -> System.exit(0);
         }
     }
 

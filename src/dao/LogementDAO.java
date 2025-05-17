@@ -77,4 +77,29 @@ public class LogementDAO {
             return false;
         }
     }
+    
+    public Logement findById(int id) {
+        Logement logement = null;
+        String sql = "SELECT * FROM logement WHERE id = ?";
+        
+        try (Connection conn = Connexion.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                logement = new Logement();
+                logement.setId(rs.getInt("id"));
+                logement.setAdresse(rs.getString("adresse"));
+                logement.setLoyer(rs.getDouble("loyer"));
+                // Ajoute ici les autres propriétés si tu en as
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return logement;
+    }
 }

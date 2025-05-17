@@ -2,30 +2,22 @@ package view;
 
 import controller.ContratLocationController;
 import controller.PaiementController;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.time.LocalDate;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
 import model.ContratLocation;
 import model.Paiement;
+import model.Locataire;
+import model.Logement;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.io.FileOutputStream;
+import java.time.LocalDate;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
 
 public class FormPaiement extends JFrame {
 
-    private JComboBox<ContratLocation> comboContrat;  // Modifier la déclaration pour accepter les objets ContratLocation
+    private JComboBox<ContratLocation> comboContrat;
     private JTextField txtDatePaiement;
     private JTextField txtMontant;
     private JTable table;
@@ -41,32 +33,28 @@ public class FormPaiement extends JFrame {
 
         initUI();
         afficherPaiements();
-        remplirContrats();  // Charger les contrats dans la JComboBox
+        remplirContrats();
     }
 
     private void initUI() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Paiement"));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);  // Spacing between components
+        gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.WEST;
 
         comboContrat = new JComboBox<>();
         txtDatePaiement = new JTextField(LocalDate.now().toString());
         txtMontant = new JTextField();
 
-        // Adding the labels and fields to the panel using GridBagLayout
         int y = 0;
 
-        // Ligne 1 - Contrat
         gbc.gridx = 0;
         gbc.gridy = y;
         panel.add(new JLabel("Contrat : "), gbc);
         gbc.gridx = 1;
         panel.add(comboContrat, gbc);
 
-        // Ligne 2 - Date paiement
         y++;
         gbc.gridx = 0;
         gbc.gridy = y;
@@ -74,7 +62,6 @@ public class FormPaiement extends JFrame {
         gbc.gridx = 1;
         panel.add(txtDatePaiement, gbc);
 
-        // Ligne 3 - Montant
         y++;
         gbc.gridx = 0;
         gbc.gridy = y;
@@ -82,7 +69,6 @@ public class FormPaiement extends JFrame {
         gbc.gridx = 1;
         panel.add(txtMontant, gbc);
 
-        // Ligne 4 - Boutons
         y++;
         gbc.gridx = 0;
         gbc.gridy = y;
@@ -93,17 +79,22 @@ public class FormPaiement extends JFrame {
         JButton btnSupprimer = createStyledButton("SUPPRIMER", new Color(220, 53, 69));
         panel.add(btnSupprimer, gbc);
 
-        // Ligne 5 - Bouton retour
         y++;
         gbc.gridx = 0;
         gbc.gridy = y;
         JButton btnRetour = createStyledButton("RETOUR", new Color(108, 117, 125));
         panel.add(btnRetour, gbc);
 
-        // Actions
+        y++;
+        gbc.gridx = 0;
+        gbc.gridy = y;
+        JButton btnPdf = createStyledButton("GÉNÉRER PDF", new Color(0, 123, 255));
+        panel.add(btnPdf, gbc);
+
         btnEnregistrer.addActionListener(e -> ajouterPaiement());
         btnSupprimer.addActionListener(e -> supprimerPaiement());
         btnRetour.addActionListener(e -> dispose());
+        btnPdf.addActionListener(e -> genererPDF());
 
         model = new DefaultTableModel(new String[]{"ID", "Contrat", "Date", "Montant"}, 0);
         table = new JTable(model);
@@ -122,12 +113,11 @@ public class FormPaiement extends JFrame {
         return btn;
     }
 
-    // Fonction bouton ajouter
     private void ajouterPaiement() {
         try {
             Paiement p = new Paiement();
-            ContratLocation contrat = (ContratLocation) comboContrat.getSelectedItem();  // Récupérer l'objet ContratLocation
-            p.setIdContrat(contrat.getId());  // Utiliser l'ID du contrat sélectionné
+            ContratLocation contrat = (ContratLocation) comboContrat.getSelectedItem();
+            p.setIdContrat(contrat.getId());
             p.setDatePaiement(LocalDate.parse(txtDatePaiement.getText()));
             p.setMontant(Double.parseDouble(txtMontant.getText()));
 
@@ -143,7 +133,6 @@ public class FormPaiement extends JFrame {
         }
     }
 
-    // Fonction supprimer Paiement
     private void supprimerPaiement() {
         int row = table.getSelectedRow();
         if (row != -1) {
@@ -156,13 +145,11 @@ public class FormPaiement extends JFrame {
         }
     }
 
-    // Fonction vider les champs 
-    public void viderChamps() {
+    private void viderChamps() {
         txtDatePaiement.setText("");
         txtMontant.setText("");
     }
 
-    // Fonction afficher les données Paiements
     private void afficherPaiements() {
         model.setRowCount(0);
         for (Paiement p : controller.getTousPaiements()) {
@@ -172,12 +159,54 @@ public class FormPaiement extends JFrame {
         }
     }
 
-    // Remplir la JComboBox avec les contrats existants
     private void remplirContrats() {
         comboContrat.removeAllItems();
         ContratLocationController lc = new ContratLocationController();
         for (ContratLocation cl : lc.getTousContrats()) {
-            comboContrat.addItem(cl);  // Ajouter chaque contrat dans la JComboBox
+            comboContrat.addItem(cl);
+        }
+    }
+
+    private void genererPDF() {
+        try {
+            Document document = new Document();
+            PdfWriter.getInstance(document, new FileOutputStream("paiements.pdf"));
+            document.open();
+
+            document.add(new Paragraph("Liste des Paiements", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph(" ")); // Espace
+
+            PdfPTable pdfTable = new PdfPTable(7);
+            pdfTable.setWidthPercentage(100);
+            pdfTable.setWidths(new int[]{2, 2, 3, 2, 3, 4, 2});
+
+            pdfTable.addCell("ID");
+            pdfTable.addCell("Contrat");
+            pdfTable.addCell("Date");
+            pdfTable.addCell("Montant");
+            pdfTable.addCell("Locataire");
+            pdfTable.addCell("Adresse");
+            pdfTable.addCell("Loyer");
+
+            for (Paiement p : controller.getTousPaiements()) {
+                ContratLocation contrat = controller.getContratById(p.getIdContrat());
+                Locataire loc = contrat.getLocataire();
+                Logement log = contrat.getLogement();
+
+                pdfTable.addCell(String.valueOf(p.getId()));
+                pdfTable.addCell(String.valueOf(contrat.getId()));
+                pdfTable.addCell(p.getDatePaiement().toString());
+                pdfTable.addCell(String.valueOf(p.getMontant()));
+                pdfTable.addCell(loc.getNom() + " " + loc.getPrenom());
+                pdfTable.addCell(log.getAdresse());
+                pdfTable.addCell(String.valueOf(log.getLoyer()));
+            }
+
+            document.add(pdfTable);
+            document.close();
+            JOptionPane.showMessageDialog(this, "PDF généré avec succès !");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erreur génération PDF : " + ex.getMessage());
         }
     }
 
